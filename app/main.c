@@ -29,14 +29,11 @@ void patternThree(int, int[]);
 
 //Main loop
 int main() {
-
+    
     WDTCTL = WDTPW | WDTHOLD;
     PM5CTL0 &= ~LOCKLPM5;
 
     keypadSetup();
-    RGBLEDSetup();
-    LEDBarSetup();
-    heartbeatSetup();
 
     char input_arr[4] = {'e', 'e', 'e', 'e'};
     char input_arr_pre[4];
@@ -54,13 +51,176 @@ int main() {
     int step = 0;
     int i;
     int j;
-   
+
+    while(true) {
+        while(locked) {
+            if(input_arr[0] != 'e') 
+            for(i = 0; i < 4; i++) {
+                input_arr_pre[i] = input_arr[i];
+            }
+            P1OUT &= ~BIT2;
+            if((P5IN & BIT2) == 0) {
+                input_arr[counter] = '1';
+                keyReleased(&P5IN, BIT2);
+            } else if((P3IN & BIT6) == 0) {
+                input_arr[counter] = '2';
+                keyReleased(&P3IN, BIT6);
+            } else if((P1IN & BIT7) == 0) {
+                input_arr[counter] = '3';
+                keyReleased(&P1IN, BIT7);
+            } else if((P1IN & BIT6) == 0) {
+                input_arr[counter] = 'A';
+                keyReleased(&P1IN, BIT6);
+            }
+            P1OUT |= BIT2;
+            P1OUT &= ~BIT3;
+            if((P5IN & BIT2) == 0) {
+                input_arr[counter] = '4';
+                keyReleased(&P5IN, BIT2);
+            } else if((P3IN & BIT6) == 0) {
+                input_arr[counter] = '5';
+                keyReleased(&P3IN, BIT6);
+            } else if((P1IN & BIT7) == 0) {
+                input_arr[counter] = '6';
+                keyReleased(&P1IN, BIT7);
+            } else if((P1IN & BIT6) == 0) {
+                input_arr[counter] = 'B';
+                keyReleased(&P1IN, BIT6);
+            }
+            P1OUT |= BIT3;
+            P3OUT &= ~BIT4;
+            if((P5IN & BIT2) == 0) {
+                input_arr[counter] = '7';
+                keyReleased(&P5IN, BIT2);
+            } else if((P3IN & BIT6) == 0) {
+                input_arr[counter] = '8';
+                keyReleased(&P3IN, BIT6);
+            } else if((P1IN & BIT7) == 0) {
+                input_arr[counter] = '9';
+                keyReleased(&P1IN, BIT7);
+            } else if((P1IN & BIT6) == 0) {
+                input_arr[counter] = 'C';
+                keyReleased(&P1IN, BIT6);
+            }
+            P3OUT |= BIT4;
+            P4OUT &= ~BIT5;
+            if((P5IN & BIT2) == 0) {
+                input_arr[counter] = '*';
+                keyReleased(&P5IN, BIT2);
+            } else if((P3IN & BIT6) == 0) {
+                input_arr[counter] = '0';
+                keyReleased(&P3IN, BIT6);
+            } else if((P1IN & BIT7) == 0) {
+                input_arr[counter] = '#';
+                keyReleased(&P1IN, BIT7);
+            } else if((P1IN & BIT6) == 0) {
+                input_arr[counter] = 'D';
+                keyReleased(&P1IN, BIT6);
+            }
+            P4OUT |= BIT5;
+            
+            int correct = 0;
+            if(counter == 4) {
+                for(i = 0; i < 4; i++) {
+                    if(input_arr[i] != unlock_code[i] ) {
+                        counter = 0;
+                        for(j = 0; j < 4; j++) {
+                            input_arr[j] = 'e';
+                        }
+                        break;
+                    }
+                    correct++;
+                }
+                if(correct == 4) locked = false;
+            }
+            else if(!arraysEqual(input_arr, input_arr_pre)) counter++;
+        }
+
+        while(true) {
+            //Poll row 1
+            P1OUT &= ~BIT2;
+            if((P5IN & BIT2) == 0) {
+                if(patternNum == 1) {
+                    prevPatterns[0] = 0;
+                }
+                patternNum = 1;
+                step = prevPatterns[0];
+                keyReleased(&P5IN, BIT2);
+            } else if((P3IN & BIT6) == 0) {
+                if(patternNum == 2) {
+                    prevPatterns[1] = 0;
+                }
+                patternNum = 2;
+                step = prevPatterns[1];
+                keyReleased(&P3IN, BIT6);
+            } else if((P1IN & BIT7) == 0) {
+                if(patternNum == 3) {
+                    prevPatterns[2] = 0;
+                }
+                patternNum = 3;
+                step = prevPatterns[2];
+                keyReleased(&P1IN, BIT7);
+            } else if((P1IN & BIT6) == 0) {
+                if(baseTransitionPeriod > 1) baseTransitionPeriod -= 1;           //If A is clicked, decrease BTP by 0.25s
+                keyReleased(&P1IN, BIT6);
+            }
+            P1OUT |= BIT2;
+            //Poll row 2
+            P1OUT &= ~BIT3;
+            if((P1IN & BIT6) == 0) {
+                if(baseTransitionPeriod < 8) baseTransitionPeriod += 1;           //If B is clicked, increase BTP by 0.25s
+                keyReleased(&P1IN, BIT6);
+            }
+            P1OUT |= BIT3;
+            //Poll row 4
+            P4OUT &= ~BIT5;
+            if((P3IN & BIT6) == 0) {
+                patternNum = 0;
+                step = 0;
+                keyReleased(&P3IN, BIT6);
+            } else if((P1IN & BIT6) == 0) {
+                for(i = 0; i < 4; i++) {
+                    input_arr[i] = 'e';
+                    input_arr_pre[i] = 'e';
+                }
+                for(i = 0; i < 3; i++) {
+                    prevPatterns[i] = 0;
+                }
+                patternNum = -1;
+                locked = true;
+                break;
+            }
+            P4OUT |= BIT5;           
+    }
     return 0;
 }
 
 //Setup function for keypad
 void keypadSetup() {
+    
+    P1DIR &= ~BIT6;         // all columns set as inputs
+    P1DIR &= ~BIT7;
+    P3DIR &= ~BIT6;
+    P5DIR &= ~BIT2;
 
+    P1REN |= BIT6;          // enable resistors for columns
+    P1REN |= BIT7;
+    P3REN |= BIT6;
+    P5REN |= BIT2;
+    P1OUT |= BIT6;          // set column resistors as pull-ups
+    P1OUT |= BIT7;
+    P3OUT |= BIT6;
+    P5OUT |= BIT2;
+
+    P4DIR |= BIT5;          // all rows set as outputs
+    P3DIR |= BIT4;
+    P1DIR |= BIT3;
+    P1DIR |= BIT2;
+
+    P4OUT |= BIT5;          // initialize row outputs HI
+    P3OUT |= BIT4;
+    P1OUT |= BIT3;
+    P1OUT |= BIT2;
 }
 
 //Setup function for heartbeat LED
@@ -149,12 +309,19 @@ __interrupt void ISR_TB2_CCR1(void) {
 
 //Checks if two char arrays are equal
 bool arraysEqual(char arr1[], char arr2[]) {
-   
+   int i;
+    for(i = 0; i < 4; i++) {
+        if(arr1[i] != arr2[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 //Checks if a key on the keypad has been unpressed
 void keyReleased(volatile unsigned char* pin, unsigned char bit) {
-    
+    while((*pin & bit) == 0) {}
+    return;
 }
 
 //Sets RGB LED color to red
