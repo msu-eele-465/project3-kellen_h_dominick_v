@@ -34,6 +34,7 @@ int main() {
     PM5CTL0 &= ~LOCKLPM5;
 
     keypadSetup();
+    RGBLEDSetup();
 
     char input_arr[4] = {'e', 'e', 'e', 'e'};
     char input_arr_pre[4];
@@ -53,8 +54,9 @@ int main() {
     int j;
 
     while(true) {
+        redLED();
         while(locked) {
-            if(input_arr[0] != 'e') 
+            if(input_arr[0] != 'e') yellowLED();
             for(i = 0; i < 4; i++) {
                 input_arr_pre[i] = input_arr[i];
             }
@@ -135,6 +137,8 @@ int main() {
             }
             else if(!arraysEqual(input_arr, input_arr_pre)) counter++;
         }
+
+        blueLED();
 
         while(true) {
             //Poll row 1
