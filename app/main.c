@@ -243,7 +243,32 @@ void LEDBarSetup() {
 
 Setup function for RGB LED
 void RGBLEDSetup() {
+    P5DIR |= BIT3 | BIT1 | BIT0;   // Set red, green, and blue pins to outputs
 
+    TB0CTL = TBSSEL__ACLK | MC__UP | TBCLR;
+    TB1CTL = TBSSEL__ACLK | MC__UP | TBCLR;
+    TB2CTL = TBSSEL__ACLK | MC__UP | TBCLR;
+    TB0CCR0 = 255;
+    TB1CCR0 = 255;
+    TB2CCR0 = 255;
+
+    TB0CCR1 = 254;                  // RED
+    TB1CCR1 = 254;                  // GREEN
+    TB2CCR1 = 254;                  // BLUE
+
+    TB0CCTL0 |= CCIE;
+    TB0CCTL1 |= CCIE;
+    TB1CCTL0 |= CCIE;
+    TB1CCTL1 |= CCIE;
+    TB2CCTL0 |= CCIE;
+    TB2CCTL1 |= CCIE;
+    __enable_interrupt();
+    TB0CCTL0 &= ~CCIFG;
+    TB0CCTL1 &= ~CCIFG;
+    TB1CCTL0 &= ~CCIFG;
+    TB1CCTL1 &= ~CCIFG;
+    TB2CCTL0 &= ~CCIFG;
+    TB2CCTL1 &= ~CCIFG;
 }
 
 //Function for setting patternZeroArr to pattern zero
@@ -274,37 +299,43 @@ void setPattern(int pattern[]) {
 //ISR for period of red channel for RGB LED
 #pragma vector = TIMER0_B0_VECTOR
 __interrupt void ISR_TB0_CCR0(void) {
-   
+    P5OUT &= ~BIT3;
+    TB0CCTL0 &= ~CCIFG;
 }
 
 //ISR for pulse width of red channel for RGB LED
 #pragma vector = TIMER0_B1_VECTOR      
 __interrupt void ISR_TB0_CCR1(void) {
-  
+    P5OUT |= BIT3;
+    TB0CCTL1 &= ~CCIFG;
 }
 
 //ISR for period of green channel for RGB LED
 #pragma vector = TIMER1_B0_VECTOR
 __interrupt void ISR_TB1_CCR0(void) {
-   
+    P5OUT &= ~BIT1;
+    TB1CCTL0 &= ~CCIFG;
 }
 
 //ISR for pulse width of green channel for RGB LED
 #pragma vector = TIMER1_B1_VECTOR       
 __interrupt void ISR_TB1_CCR1(void) {
-   
+    P5OUT |= BIT1;
+    TB1CCTL1 &= ~CCIFG;
 }
 
 //ISR for period of blue channel for RGB LED
 #pragma vector = TIMER2_B0_VECTOR
 __interrupt void ISR_TB2_CCR0(void) {
-   
+    P5OUT &= ~BIT0;
+    TB2CCTL0 &= ~CCIFG;
 }
 
 //ISR for pulse width of blue channel for RGB LED
 #pragma vector = TIMER2_B1_VECTOR       
 __interrupt void ISR_TB2_CCR1(void) {
-  
+    P5OUT |= BIT0;
+    TB2CCTL1 &= ~CCIFG;
 }
 
 //Checks if two char arrays are equal
@@ -324,43 +355,44 @@ void keyReleased(volatile unsigned char* pin, unsigned char bit) {
     return;
 }
 
-//Sets RGB LED color to red
+//Sets LED color to red
 void redLED() {
-    
+    colorChange(59, 193, 226);
 }
 
-
-//Sets RGB LED color to yellow
+//Sets LED color to yellow
 void yellowLED() {
-    
+    colorChange(59, 109, 226);
 }
 
-//Sets RGB LED color to blue
+//Sets LED color to blue
 void blueLED() {
-    
+    colorChange(226, 93, 59);
 }
 
-//Sets RGB LED color to green
+//Sets LED color to green
 void greenLED() {
-    
+    colorChange(255, 1, 255);
 }
 
-//Sets RGB LED color to purple
+//Sets LED color to purple
 void purpleLED() {
-    
+    colorChange(1, 255, 1);
 }
 
-//Sets RGB LED color to white
+//Sets LED color to white
 void whiteLED() {
-  
+    colorChange(1, 2, 2);
 }
 
-//Sets RGB LED color to dark red
+//Sets LED color to dark red
 void darkRedLED() {
-  
+    colorChange(1, 255, 255);
 }
 
-//Changes CCR1 on timers to reflect appropriate colors
+//Changes CCR1 for timers B0,1,2 to reflect proper pulse width
 void colorChange(int red, int green, int blue) {
-
+    TB0CCR1 = 255 - red;
+    TB1CCR1 = 255 - green;
+    TB2CCR1 = 255 - blue;
 }
