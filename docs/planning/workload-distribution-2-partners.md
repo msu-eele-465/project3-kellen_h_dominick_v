@@ -12,8 +12,7 @@ You will submit this form at least twice.  Once before the project starts.  This
 |Circuit diagram                                                    | 1     |   Dominick        |           |
 |Main loop flowchart                                                | 1     |           |    Kellen       |
 |System architecture diagram                                        | 1     |           |  Kellen         |
-|Professional demo                                                  | 2     |   Dominick        |   Kellen
-|
+|Professional demo                                                  | 2     |   Dominick        |  Kellen |
 |System starts in a locked state                                    | 0.5   |   Dominick        |    Kellen       |
 |Unlock code works and is 4-digits long                             | 4     |  Dominick         |   Kellen        |
 |LED is set to correct color when locked                            | 0.5   |  Dominick         |   Kellen        |
